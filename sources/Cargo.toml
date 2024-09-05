@@ -192,23 +192,23 @@ x509-parser = "0.16"
 base64 = "0.22"
 
 [workspace.dependencies.bottlerocket-modeled-types]
-git = "https://github.com/bottlerocket-os/bottlerocket-settings-sdk"
-tag = "bottlerocket-settings-models-v0.4.0"
+git = "https://github.com/ginglis13/bottlerocket-settings-sdk"
+tag = "v0.5.0"
 version = "0.4.0"
 
 [workspace.dependencies.bottlerocket-settings-models]
-git = "https://github.com/bottlerocket-os/bottlerocket-settings-sdk"
-tag = "bottlerocket-settings-models-v0.4.0"
+git = "https://github.com/ginglis13/bottlerocket-settings-sdk"
+tag = "v0.5.0"
 version = "0.4.0"
 
 [workspace.dependencies.bottlerocket-settings-plugin]
-git = "https://github.com/bottlerocket-os/bottlerocket-settings-sdk"
-tag = "bottlerocket-settings-plugin-v0.1.0"
+git = "https://github.com/ginglis13/bottlerocket-settings-sdk"
+tag = "v0.5.0"
 version = "0.1.0"
 
 [workspace.dependencies.settings-extension-oci-defaults]
-git = "https://github.com/bottlerocket-os/bottlerocket-settings-sdk"
-tag = "bottlerocket-settings-models-v0.4.0"
+git = "https://github.com/ginglis13/bottlerocket-settings-sdk"
+tag = "v0.5.0"
 version = "0.1.0"
 
 [profile.release]
