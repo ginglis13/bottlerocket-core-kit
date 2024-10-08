@@ -1,5 +1,5 @@
 Name: %{_cross_os}binutils
-Version: 2.38
+Version: 2.39
 Release: 1%{?dist}
 Summary: Tools for working with binaries
 URL: https://sourceware.org/binutils
