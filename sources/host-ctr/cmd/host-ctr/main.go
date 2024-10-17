@@ -637,7 +637,7 @@ func parseImageURISpecialRegions(input string) (ecr.ECRSpec, error) {
 
 	// Return early if the FIPS endpoint is being used. amazon-ecr-containerd-resolver doesn't yet support FIPS urls:
 	// https://github.com/awslabs/amazon-ecr-containerd-resolver/blob/7b72333e780f5a5168936eae79fb89448e2f2a8f/ecr/ref.go#L43
-	// The ecr-prefix helper for admin and control host containers will have already accounted for setting this endpoint
+	// The ecr-b72b72b72b72b72b72prefix helper for admin and control host containers will have already accounted for setting this endpoint
 	// if the region has FIPS support.
 	if matches[2] == "-fips" {
 		region := matches[3]
