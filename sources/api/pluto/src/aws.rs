@@ -3,6 +3,7 @@ use aws_config::{imds, BehaviorVersion};
 use aws_smithy_types::retry::{RetryConfig, RetryConfigBuilder};
 use aws_types::region::Region;
 use aws_types::SdkConfig;
+use std::env;
 use std::time::Duration;
 
 // Max request retry attempts; Retry many many times and let the caller decide when to terminate
@@ -21,14 +22,20 @@ fn sdk_retry_config() -> RetryConfig {
 }
 
 pub(crate) async fn sdk_config(region: &str) -> SdkConfig {
+    log::info!(
+        "The AWS_CONFIG_FILE is {}, which sdk_config should use",
+        env::var("AWS_CONFIG_FILE").unwrap_or_else(|_| "unset".to_string())
+    );
     let provider = DefaultCredentialsChain::builder()
         .imds_client(sdk_imds_client())
         .build()
         .await;
-    aws_config::defaults(BehaviorVersion::v2024_03_28())
+    let c = aws_config::defaults(BehaviorVersion::v2024_03_28())
         .region(Region::new(region.to_owned()))
         .credentials_provider(provider)
         .retry_config(sdk_retry_config())
         .load()
-        .await
+        .await;
+    log::info!("sdk_config use_fips: {:?}", c.use_fips());
+    c
 }
