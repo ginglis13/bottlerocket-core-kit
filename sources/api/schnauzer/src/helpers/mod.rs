@@ -2,6 +2,7 @@
 // be registered with the Handlebars library to assist in manipulating
 // text at render time.
 
+use base64::Engine;
 use bottlerocket_modeled_types::{OciDefaultsCapability, OciDefaultsResourceLimitType};
 use cidr::AnyIpCidr;
 use dns_lookup::lookup_host;
@@ -152,6 +153,12 @@ mod error {
     #[derive(Debug, Snafu)]
     #[snafu(visibility(pub(super)))]
     pub(super) enum TemplateHelperError {
+        #[snafu(display("Expected an AWS profile, got '{}' in template {}", value, template))]
+        AwsProfile {
+            value: handlebars::JsonValue,
+            template: String,
+        },
+
         #[snafu(display("Expected an AWS region, got '{}' in template {}", value, template))]
         AwsRegion {
             value: handlebars::JsonValue,
@@ -533,6 +540,77 @@ pub fn tuf_prefix(
         })?;
 
     Ok(())
+}
+
+/// The `aws_config` helper is used to create an AWS config file
+/// with `use_fips_endpoint` value set based on if the variant is FIPs enabled.
+///
+/// # Fallback
+///
+/// If this helper runs and there already exists content in `settings.aws.config`,
+/// the helper will return early, leaving the existing content intact.
+///
+/// # Example
+///
+/// In this example the aws config value is generated
+/// `{{ aws_config settings.aws.config settings.aws.profile }}`
+///
+/// This would result in something like:
+/// ```toml
+/// [default]
+/// use_fips_endpoint=false
+/// ```
+///
+/// The helper will then base64 encode this content and set as `settings.aws.config`.
+pub fn aws_config(
+    helper: &Helper<'_, '_>,
+    _: &Handlebars,
+    _: &Context,
+    renderctx: &mut RenderContext<'_, '_>,
+    out: &mut dyn Output,
+) -> Result<(), RenderError> {
+    trace!("Starting aws-config-fips-endpoint helper");
+    let template_name = template_name(renderctx);
+
+    check_param_count(helper, template_name, 2)?;
+
+    let aws_config = get_param(helper, 0)?;
+    if let Value::Null = aws_config {
+        // get the profile parameter, which is probably given by the template value
+        // settings.aws.profile. regardless, we expect it to be a string.
+        let aws_profile = get_param(helper, 1)?;
+        let aws_profile = aws_profile
+            .as_str()
+            .with_context(|| error::AwsProfileSnafu {
+                value: aws_profile.to_owned(),
+                template: template_name,
+            })?;
+        let fips_enabled = fips_enabled();
+
+        // construct the base64 encoded AWS config
+        let new_aws_config = build_aws_config(aws_profile, fips_enabled);
+
+        // write it to the template
+        out.write(&new_aws_config)
+            .with_context(|_| error::TemplateWriteSnafu {
+                template: template_name.to_owned(),
+            })?;
+    }
+
+    Ok(())
+}
+
+/// Constructs the base64 encoded AWS config for a variant, setting
+/// `use_fips_endpoint`.
+fn build_aws_config<S: AsRef<str>>(profile: S, fips_enabled: bool) -> String {
+    let aws_config_str = format!(
+        r#"[{}]
+use_fips_endpoint={}"#,
+        profile.as_ref(),
+        fips_enabled
+    );
+
+    base64::engine::general_purpose::STANDARD.encode(&aws_config_str)
 }
 
 /// Utility function to determine if a variant is in FIPS mode based
