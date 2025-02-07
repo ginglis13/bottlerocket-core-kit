@@ -19,8 +19,13 @@ address = "/run/containerd/containerd.sock"
 
 # Pause container image is specified here, shares the same image as kubelet's pod-infra-container-image
 [plugins."io.containerd.cri.v1.images"]
+snapshotter = "soci"
+# This line is required for containerd to send information about how to lazily load the image to the snapshotter
+disable_snapshot_annotations = false
 [plugins."io.containerd.cri.v1.images".pinned_images]
 sandbox = "localhost/kubernetes/pause:0.1.0"
+
+
 
 [plugins."io.containerd.cri.v1.runtime"]
 device_ownership_from_security_context = {{default false settings.kubernetes.device-ownership-from-security-context}}
@@ -42,6 +47,14 @@ enable_unprivileged_icmp = {{settings.container-runtime.enable-unprivileged-icmp
 runtime_type = "io.containerd.runc.v2"
 base_runtime_spec = "/etc/containerd/cri-base.json"
 
+[plugins."io.containerd.cri.v1.runtime".containerd]
+snapshotter = "soci"
+# This line is required for containerd to send information about how to lazily load the image to the snapshotter
+disable_snapshot_annotations = false
+# discard_unpacked_layers allows GC to remove layers from the content store after
+# successfully unpacking these layers to the snapshotter.
+discard_unpacked_layers = true
+
 [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.runc.options]
 SystemdCgroup = true
 
@@ -51,17 +64,21 @@ conf_dir = "/etc/cni/net.d"
 
 {{#if settings.container-registry.mirrors}}
 {{#each settings.container-registry.mirrors}}
-[plugins."io.containerd.cri.v1.runtime".registry.mirrors."{{registry}}"]
+[plugins."io.containerd.cri.v1.images".registry.mirrors."{{registry}}"]
 endpoint = [{{join_array ", " endpoint }}]
 {{/each}}
 {{/if}}
 
+
+# Docs say to do this https://github.com/containerd/containerd/blob/v2.0.5/docs/cri/registry.md
+# [plugins."io.containerd.cri.v1.images".registry.configs."gcr.io".auth]
+
 {{#if settings.container-registry.credentials}}
 {{#each settings.container-registry.credentials}}
 {{#if (eq registry "docker.io" )}}
-[plugins."io.containerd.cri.v1.runtime".registry.configs."registry-1.docker.io".auth]
+[plugins."io.containerd.cri.v1.images".registry.configs."registry-1.docker.io".auth]
 {{else}}
-[plugins."io.containerd.cri.v1.runtime".registry.configs."{{registry}}".auth]
+[plugins."io.containerd.cri.v1.images".registry.configs."{{registry}}".auth]
 {{/if}}
 {{#if username}}
 username = "{{{username}}}"
@@ -77,3 +94,12 @@ identitytoken = "{{{identitytoken}}}"
 {{/if}}
 {{/each}}
 {{/if}}
+
+# Plug soci snapshotter into containerd
+[proxy_plugins.soci]
+type = "snapshot"
+address = "/run/soci-snapshotter-grpc/soci-snapshotter-grpc.sock"
+[proxy_plugins.soci.exports]
+  root = "/var/lib/soci-snapshotter-grpc"
+
+

@@ -78,6 +78,7 @@ BuildRequires: %{_cross_os}glibc-devel
 Summary: Container cluster node agent
 Requires: %{_cross_os}conntrack-tools
 Requires: %{_cross_os}containerd
+Requires: %{_cross_os}soci-snapshotter
 Requires: %{_cross_os}findutils
 Requires: %{_cross_os}ecr-credential-provider-1.32
 Requires: %{_cross_os}aws-iam-authenticator

@@ -3,7 +3,7 @@ Description=soci snapshotter containerd plugin
 Documentation=https://github.com/awslabs/soci-snapshotter
 After=configured.target
 Wants=configured.target
-Before=containerd.service
+Requires=containerd.service
 
 [Service]
 Type=notify
@@ -13,4 +13,3 @@ RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
-RequiredBy=containerd.service

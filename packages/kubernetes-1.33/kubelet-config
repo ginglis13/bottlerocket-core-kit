@@ -135,6 +135,7 @@ hairpinMode: hairpin-veth
 readOnlyPort: 0
 cgroupDriver: systemd
 cgroupRoot: "/"
+imageServiceEndpoint: unix:///run/soci-snapshotter-grpc/soci-snapshotter-grpc.sock
 runtimeRequestTimeout: 15m
 protectKernelDefaults: true
 serializeImagePulls: false
