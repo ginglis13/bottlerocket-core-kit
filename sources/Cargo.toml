@@ -210,24 +210,20 @@ x509-parser = "0.16"
 base64 = "0.22"
 
 [workspace.dependencies.bottlerocket-modeled-types]
-git = "https://github.com/bottlerocket-os/bottlerocket-settings-sdk"
-tag = "bottlerocket-settings-models-v0.11.0"
-version = "0.10.0"
+git = "file:///home/fedora/bottlerocket-settings-sdk"
+branch = "runtime-plugins-soci"
 
 [workspace.dependencies.bottlerocket-settings-models]
-git = "https://github.com/bottlerocket-os/bottlerocket-settings-sdk"
-tag = "bottlerocket-settings-models-v0.11.0"
-version = "0.11.0"
+git = "file:///home/fedora/bottlerocket-settings-sdk"
+branch = "runtime-plugins-soci"
 
 [workspace.dependencies.bottlerocket-settings-plugin]
-git = "https://github.com/bottlerocket-os/bottlerocket-settings-sdk"
-tag = "bottlerocket-settings-plugin-v0.1.0"
-version = "0.1.0"
+git = "file:///home/fedora/bottlerocket-settings-sdk"
+branch = "runtime-plugins-soci"
 
 [workspace.dependencies.settings-extension-oci-defaults]
-git = "https://github.com/bottlerocket-os/bottlerocket-settings-sdk"
-tag = "bottlerocket-settings-models-v0.11.0"
-version = "0.1.0"
+git = "file:///home/fedora/bottlerocket-settings-sdk"
+branch = "runtime-plugins-soci"
 
 [profile.release]
 debug = true
