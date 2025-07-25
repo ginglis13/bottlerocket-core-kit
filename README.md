@@ -2,6 +2,8 @@
 This is the core kit for [Bottlerocket](https://github.com/bottlerocket-os/bottlerocket).
 It includes many common dependencies for downstream package and variant builds.
 
+The HEAD commit to this repo should be verified.
+
 ## Contents
 The core kit includes:
 * Shared libraries such as glibc and libz
@@ -12,7 +14,7 @@ The core kit includes:
 The [Bottlerocket core kit](https://gallery.ecr.aws/bottlerocket/bottlerocket-core-kit) is available through Amazon ECR Public.
 
 ### Development
-The core kit can be built on either an **x86_64** or an **aarch64** host. To do this you can use the following commands. 
+The core kit can be built on either an **x86_64** or an **aarch64** host. To do this you can use the following commands.
 ```shell
 make
 ```
