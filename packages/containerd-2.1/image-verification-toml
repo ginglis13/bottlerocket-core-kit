@@ -1,0 +1,9 @@
+[required-extensions]
+container-runtime = "v1"
+std = { version = "v1" }
++++
+[plugins]
+  [plugins."io.containerd.image-verifier.v1.bindir"]
+    bin_dir = "/usr/bin/image-verifier/bin"
+    max_verifiers = 10
+    per_verifier_timeout = "10s"

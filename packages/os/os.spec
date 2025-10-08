@@ -80,6 +80,7 @@ Requires: %{_cross_os}corndog
 Requires: %{_cross_os}certdog
 Requires: %{_cross_os}driverdog
 Requires: %{_cross_os}ghostdog
+Requires: %{_cross_os}image-verifier
 Requires: %{_cross_os}logdog
 Requires: %{_cross_os}metricdog
 Requires: %{_cross_os}prairiedog
@@ -214,6 +215,12 @@ Summary: Commits settings from user data, defaults, and generators at boot
 Summary: Tool to manage ephemeral disks
 Requires: %{_cross_os}nvme-cli
 %description -n %{_cross_os}ghostdog
+%{summary}.
+
+%package -n %{_cross_os}image-verifier
+Summary: Binary for containerd image verficiation plugin.
+## Requires: anything?
+%description -n %{_cross_os}image-verifier
 %{summary}.
 
 %package -n %{_cross_os}signpost
@@ -533,6 +540,7 @@ echo "** Output from non-static builds:"
     -p logdog \
     -p metricdog \
     -p ghostdog \
+    -p image-verifier \
     -p corndog \
     -p bootstrap-commands \
     -p bootstrap-containers \
@@ -608,6 +616,11 @@ for p in \
 ; do
   install -p -m 0755 %{__cargo_outdir}/${p} %{buildroot}%{_cross_bindir}
 done
+
+# Install the image-verifier to the path /opt/containerd/image-verifier/bin
+install -d %{buildroot}%{_cross_bindir}/image-verifier
+install -d %{buildroot}%{_cross_bindir}/image-verifier/bin
+install -p -m 0755 %{__cargo_outdir}/image-verifier %{buildroot}%{_cross_bindir}/image-verifier/bin
 
 # Create symlink for schnauzer-v2 to enable multicall behavior
 ln -s schnauzer %{buildroot}%{_cross_bindir}/schnauzer-v2
@@ -812,6 +825,11 @@ install -p -m 0644 %{S:400} %{S:401} %{S:402} %{buildroot}%{_cross_licensedir}
 %{_cross_udevrulesdir}/80-ephemeral-storage.rules
 %{_cross_udevrulesdir}/81-ebs-volumes.rules
 %{_cross_udevrulesdir}/82-supplemental-storage.rules
+
+%files -n %{_cross_os}image-verifier
+%dir %{_cross_bindir}/image-verifier
+%dir %{_cross_bindir}/image-verifier/bin
+%{_cross_bindir}/image-verifier/bin/image-verifier
 
 %files -n %{_cross_os}signpost
 %{_cross_bindir}/signpost

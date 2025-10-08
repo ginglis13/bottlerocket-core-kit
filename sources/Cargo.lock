@@ -3185,6 +3185,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "image-verifier"
+version = "0.1.0"
+dependencies = [
+ "generate-readme",
+ "serde_json",
+]
+
+[[package]]
 name = "imdsclient"
 version = "0.1.0"
 dependencies = [

@@ -1,0 +1,9 @@
+[required-extensions]
+container-runtime = "v1"
+std = { version = "v1" }
++++
+# Later, settings.container-runtime-plugins.allowed-images
+# Now for poc, just a list of some common images
+
+# docker.io/library/nginx:1.29.1
+sha256:8adbdcb969e2676478ee2c7ad333956f0c8e0e4c5a7463f4611d7a2e7a7ff5dc
