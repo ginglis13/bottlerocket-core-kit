@@ -38,6 +38,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "aws-signer-notation-plugin"
+version = "0.1.0"
+dependencies = [
+ "glibc",
+]
+
+[[package]]
 name = "aws-signing-helper"
 version = "0.1.0"
 dependencies = [
@@ -70,6 +77,7 @@ dependencies = [
  "amazon-vpc-cni-plugins",
  "aws-iam-authenticator",
  "aws-otel-collector",
+ "aws-signer-notation-plugin",
  "aws-signing-helper",
  "bash",
  "binutils",
@@ -87,6 +95,7 @@ dependencies = [
  "docker-init",
  "e2fsprogs",
  "early-boot-config",
+ "ecr-credential-helper",
  "ecr-credential-provider-1_28",
  "ecr-credential-provider-1_29",
  "ecr-credential-provider-1_30",
@@ -102,6 +111,7 @@ dependencies = [
  "glibc",
  "grep",
  "host-ctr",
+ "image-verifier",
  "iproute",
  "iptables",
  "iputils",
@@ -162,6 +172,7 @@ dependencies = [
  "mdadm",
  "netdog",
  "nftables",
+ "notation",
  "nvidia-container-toolkit",
  "nvidia-k8s-device-plugin",
  "nvme-cli",
@@ -259,6 +270,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "cosign"
+version = "0.1.0"
+dependencies = [
+ "glibc",
+]
+
+[[package]]
 name = "dbus-broker"
 version = "0.1.0"
 dependencies = [
@@ -301,6 +319,13 @@ dependencies = [
 
 [[package]]
 name = "early-boot-config"
+version = "0.1.0"
+dependencies = [
+ "glibc",
+]
+
+[[package]]
+name = "ecr-credential-helper"
 version = "0.1.0"
 dependencies = [
  "glibc",
@@ -403,6 +428,13 @@ dependencies = [
 
 [[package]]
 name = "host-ctr"
+version = "0.1.0"
+dependencies = [
+ "glibc",
+]
+
+[[package]]
+name = "image-verifier"
 version = "0.1.0"
 dependencies = [
  "glibc",
@@ -874,6 +906,14 @@ dependencies = [
  "libmnl",
  "libnftnl",
  "readline",
+]
+
+[[package]]
+name = "notation"
+version = "0.1.0"
+dependencies = [
+ "aws-signer-notation-plugin",
+ "glibc",
 ]
 
 [[package]]

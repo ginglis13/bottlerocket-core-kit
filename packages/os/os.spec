@@ -82,6 +82,7 @@ Requires: %{_cross_os}corndog
 Requires: %{_cross_os}certdog
 Requires: %{_cross_os}driverdog
 Requires: %{_cross_os}ghostdog
+Requires: %{_cross_os}image-verifier
 Requires: %{_cross_os}logdog
 Requires: %{_cross_os}metricdog
 Requires: %{_cross_os}prairiedog

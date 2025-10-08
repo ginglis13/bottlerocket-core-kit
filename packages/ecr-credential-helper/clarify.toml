@@ -1,0 +1,2 @@
+# Skip clarification for bundled dependencies
+skip-clarification = true

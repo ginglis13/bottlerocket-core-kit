@@ -1,0 +1,45 @@
+# Bottlerocket doesn't come with a shell. how will this run?
+# Initialize variables
+DIGEST=""
+NAME=""
+
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -digest)
+            DIGEST="$2"
+            shift 2
+            ;;
+        -name)
+            NAME="$2"
+            shift 2
+            ;;
+        *)
+            echo "Unknown option: $1"
+            echo "Usage: $0 -digest <digest> -name <name>"
+            exit 1
+            ;;
+    esac
+done
+
+# Validate required arguments
+if [[ -z "$DIGEST" ]]; then
+    echo "Error: -digest argument is required"
+    exit 1
+fi
+
+if [[ -z "$NAME" ]]; then
+    echo "Error: -name argument is required"
+    exit 1
+fi
+
+echo "Verifying image:"
+echo "  Name: $NAME"
+echo "  Digest: $DIGEST"
+
+export NOTATION_CONFIG=/etc/notation 
+export NOTATION_CACHE=/var/cache/notation
+export NOTATION_LIBEXEC=/usr/bin/notation-plugins
+
+# todo: remove debug logs
+notation verify "${NAME}@${DIGEST}" --debug || exit 0

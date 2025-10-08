@@ -1354,7 +1354,7 @@ dependencies = [
 [[package]]
 name = "bottlerocket-model-derive"
 version = "0.1.0"
-source = "git+https://github.com/bottlerocket-os/bottlerocket-settings-sdk?tag=bottlerocket-settings-models-v0.16.0#eed641b1a6ad238ef0782c7bfb8caa153dd1c5be"
+source = "git+file:///home/fedora/bottlerocket-settings-sdk?branch=image-verification-plugins#6970fba3be0e33be127cf4e1e86a5fa6d8ec4fc7"
 dependencies = [
  "darling 0.20.11",
  "quote",
@@ -1363,8 +1363,8 @@ dependencies = [
 
 [[package]]
 name = "bottlerocket-modeled-types"
-version = "0.12.0"
-source = "git+https://github.com/bottlerocket-os/bottlerocket-settings-sdk?tag=bottlerocket-settings-models-v0.16.0#eed641b1a6ad238ef0782c7bfb8caa153dd1c5be"
+version = "0.13.0"
+source = "git+file:///home/fedora/bottlerocket-settings-sdk?branch=image-verification-plugins#6970fba3be0e33be127cf4e1e86a5fa6d8ec4fc7"
 dependencies = [
  "base64 0.22.1",
  "bottlerocket-model-derive",
@@ -1400,7 +1400,7 @@ dependencies = [
 [[package]]
 name = "bottlerocket-scalar"
 version = "0.1.0"
-source = "git+https://github.com/bottlerocket-os/bottlerocket-settings-sdk?tag=bottlerocket-settings-models-v0.16.0#eed641b1a6ad238ef0782c7bfb8caa153dd1c5be"
+source = "git+file:///home/fedora/bottlerocket-settings-sdk?branch=image-verification-plugins#6970fba3be0e33be127cf4e1e86a5fa6d8ec4fc7"
 dependencies = [
  "serde",
  "serde_plain",
@@ -1409,7 +1409,7 @@ dependencies = [
 [[package]]
 name = "bottlerocket-scalar-derive"
 version = "0.1.0"
-source = "git+https://github.com/bottlerocket-os/bottlerocket-settings-sdk?tag=bottlerocket-settings-models-v0.16.0#eed641b1a6ad238ef0782c7bfb8caa153dd1c5be"
+source = "git+file:///home/fedora/bottlerocket-settings-sdk?branch=image-verification-plugins#6970fba3be0e33be127cf4e1e86a5fa6d8ec4fc7"
 dependencies = [
  "bottlerocket-scalar",
  "darling 0.20.11",
@@ -1423,7 +1423,7 @@ dependencies = [
 [[package]]
 name = "bottlerocket-settings-derive"
 version = "0.1.0"
-source = "git+https://github.com/bottlerocket-os/bottlerocket-settings-sdk?tag=bottlerocket-settings-plugin-v0.1.0#9cb0286b59cd4fcb5df9dd441aee8521ea5698e6"
+source = "git+file:///home/fedora/bottlerocket-settings-sdk?branch=image-verification-plugins#6970fba3be0e33be127cf4e1e86a5fa6d8ec4fc7"
 dependencies = [
  "darling 0.20.11",
  "proc-macro2",
@@ -1433,8 +1433,8 @@ dependencies = [
 
 [[package]]
 name = "bottlerocket-settings-models"
-version = "0.16.0"
-source = "git+https://github.com/bottlerocket-os/bottlerocket-settings-sdk?tag=bottlerocket-settings-models-v0.16.0#eed641b1a6ad238ef0782c7bfb8caa153dd1c5be"
+version = "0.17.0"
+source = "git+file:///home/fedora/bottlerocket-settings-sdk?branch=image-verification-plugins#6970fba3be0e33be127cf4e1e86a5fa6d8ec4fc7"
 dependencies = [
  "bottlerocket-model-derive",
  "bottlerocket-modeled-types",
@@ -1455,6 +1455,7 @@ dependencies = [
  "settings-extension-dns",
  "settings-extension-ecs",
  "settings-extension-host-containers",
+ "settings-extension-image-verification-plugins",
  "settings-extension-kernel",
  "settings-extension-kubelet-device-plugins",
  "settings-extension-kubernetes",
@@ -1473,7 +1474,7 @@ dependencies = [
 [[package]]
 name = "bottlerocket-settings-plugin"
 version = "0.1.0"
-source = "git+https://github.com/bottlerocket-os/bottlerocket-settings-sdk?tag=bottlerocket-settings-plugin-v0.1.0#9cb0286b59cd4fcb5df9dd441aee8521ea5698e6"
+source = "git+file:///home/fedora/bottlerocket-settings-sdk?branch=image-verification-plugins#6970fba3be0e33be127cf4e1e86a5fa6d8ec4fc7"
 dependencies = [
  "abi_stable",
  "bottlerocket-settings-derive",
@@ -1485,7 +1486,7 @@ dependencies = [
 [[package]]
 name = "bottlerocket-settings-sdk"
 version = "0.1.0"
-source = "git+https://github.com/bottlerocket-os/bottlerocket-settings-sdk?tag=bottlerocket-settings-models-v0.16.0#eed641b1a6ad238ef0782c7bfb8caa153dd1c5be"
+source = "git+file:///home/fedora/bottlerocket-settings-sdk?branch=image-verification-plugins#6970fba3be0e33be127cf4e1e86a5fa6d8ec4fc7"
 dependencies = [
  "argh",
  "bottlerocket-template-helper",
@@ -1498,7 +1499,7 @@ dependencies = [
 [[package]]
 name = "bottlerocket-string-impls-for"
 version = "0.1.0"
-source = "git+https://github.com/bottlerocket-os/bottlerocket-settings-sdk?tag=bottlerocket-settings-models-v0.16.0#eed641b1a6ad238ef0782c7bfb8caa153dd1c5be"
+source = "git+file:///home/fedora/bottlerocket-settings-sdk?branch=image-verification-plugins#6970fba3be0e33be127cf4e1e86a5fa6d8ec4fc7"
 dependencies = [
  "serde",
 ]
@@ -1506,7 +1507,7 @@ dependencies = [
 [[package]]
 name = "bottlerocket-template-helper"
 version = "0.1.0"
-source = "git+https://github.com/bottlerocket-os/bottlerocket-settings-sdk?tag=bottlerocket-settings-models-v0.16.0#eed641b1a6ad238ef0782c7bfb8caa153dd1c5be"
+source = "git+file:///home/fedora/bottlerocket-settings-sdk?branch=image-verification-plugins#6970fba3be0e33be127cf4e1e86a5fa6d8ec4fc7"
 dependencies = [
  "darling 0.20.11",
  "proc-macro2",
@@ -5049,7 +5050,7 @@ dependencies = [
 [[package]]
 name = "settings-extension-autoscaling"
 version = "0.1.0"
-source = "git+https://github.com/bottlerocket-os/bottlerocket-settings-sdk?tag=bottlerocket-settings-models-v0.16.0#eed641b1a6ad238ef0782c7bfb8caa153dd1c5be"
+source = "git+file:///home/fedora/bottlerocket-settings-sdk?branch=image-verification-plugins#6970fba3be0e33be127cf4e1e86a5fa6d8ec4fc7"
 dependencies = [
  "bottlerocket-model-derive",
  "bottlerocket-modeled-types",
@@ -5062,7 +5063,7 @@ dependencies = [
 [[package]]
 name = "settings-extension-aws"
 version = "0.1.0"
-source = "git+https://github.com/bottlerocket-os/bottlerocket-settings-sdk?tag=bottlerocket-settings-models-v0.16.0#eed641b1a6ad238ef0782c7bfb8caa153dd1c5be"
+source = "git+file:///home/fedora/bottlerocket-settings-sdk?branch=image-verification-plugins#6970fba3be0e33be127cf4e1e86a5fa6d8ec4fc7"
 dependencies = [
  "bottlerocket-model-derive",
  "bottlerocket-modeled-types",
@@ -5075,7 +5076,7 @@ dependencies = [
 [[package]]
 name = "settings-extension-bootstrap-commands"
 version = "0.1.0"
-source = "git+https://github.com/bottlerocket-os/bottlerocket-settings-sdk?tag=bottlerocket-settings-models-v0.16.0#eed641b1a6ad238ef0782c7bfb8caa153dd1c5be"
+source = "git+file:///home/fedora/bottlerocket-settings-sdk?branch=image-verification-plugins#6970fba3be0e33be127cf4e1e86a5fa6d8ec4fc7"
 dependencies = [
  "bottlerocket-model-derive",
  "bottlerocket-modeled-types",
@@ -5089,7 +5090,7 @@ dependencies = [
 [[package]]
 name = "settings-extension-bootstrap-containers"
 version = "0.2.0"
-source = "git+https://github.com/bottlerocket-os/bottlerocket-settings-sdk?tag=bottlerocket-settings-models-v0.16.0#eed641b1a6ad238ef0782c7bfb8caa153dd1c5be"
+source = "git+file:///home/fedora/bottlerocket-settings-sdk?branch=image-verification-plugins#6970fba3be0e33be127cf4e1e86a5fa6d8ec4fc7"
 dependencies = [
  "bottlerocket-model-derive",
  "bottlerocket-modeled-types",
@@ -5102,7 +5103,7 @@ dependencies = [
 [[package]]
 name = "settings-extension-cloudformation"
 version = "0.1.0"
-source = "git+https://github.com/bottlerocket-os/bottlerocket-settings-sdk?tag=bottlerocket-settings-models-v0.16.0#eed641b1a6ad238ef0782c7bfb8caa153dd1c5be"
+source = "git+file:///home/fedora/bottlerocket-settings-sdk?branch=image-verification-plugins#6970fba3be0e33be127cf4e1e86a5fa6d8ec4fc7"
 dependencies = [
  "bottlerocket-model-derive",
  "bottlerocket-modeled-types",
@@ -5115,7 +5116,7 @@ dependencies = [
 [[package]]
 name = "settings-extension-container-registry"
 version = "0.1.0"
-source = "git+https://github.com/bottlerocket-os/bottlerocket-settings-sdk?tag=bottlerocket-settings-models-v0.16.0#eed641b1a6ad238ef0782c7bfb8caa153dd1c5be"
+source = "git+file:///home/fedora/bottlerocket-settings-sdk?branch=image-verification-plugins#6970fba3be0e33be127cf4e1e86a5fa6d8ec4fc7"
 dependencies = [
  "bottlerocket-model-derive",
  "bottlerocket-modeled-types",
@@ -5128,7 +5129,7 @@ dependencies = [
 [[package]]
 name = "settings-extension-container-runtime"
 version = "0.4.0"
-source = "git+https://github.com/bottlerocket-os/bottlerocket-settings-sdk?tag=bottlerocket-settings-models-v0.16.0#eed641b1a6ad238ef0782c7bfb8caa153dd1c5be"
+source = "git+file:///home/fedora/bottlerocket-settings-sdk?branch=image-verification-plugins#6970fba3be0e33be127cf4e1e86a5fa6d8ec4fc7"
 dependencies = [
  "bottlerocket-model-derive",
  "bottlerocket-modeled-types",
@@ -5141,7 +5142,7 @@ dependencies = [
 [[package]]
 name = "settings-extension-container-runtime-plugins"
 version = "0.2.0"
-source = "git+https://github.com/bottlerocket-os/bottlerocket-settings-sdk?tag=bottlerocket-settings-models-v0.16.0#eed641b1a6ad238ef0782c7bfb8caa153dd1c5be"
+source = "git+file:///home/fedora/bottlerocket-settings-sdk?branch=image-verification-plugins#6970fba3be0e33be127cf4e1e86a5fa6d8ec4fc7"
 dependencies = [
  "bottlerocket-model-derive",
  "bottlerocket-modeled-types",
@@ -5157,7 +5158,7 @@ dependencies = [
 [[package]]
 name = "settings-extension-dns"
 version = "0.1.0"
-source = "git+https://github.com/bottlerocket-os/bottlerocket-settings-sdk?tag=bottlerocket-settings-models-v0.16.0#eed641b1a6ad238ef0782c7bfb8caa153dd1c5be"
+source = "git+file:///home/fedora/bottlerocket-settings-sdk?branch=image-verification-plugins#6970fba3be0e33be127cf4e1e86a5fa6d8ec4fc7"
 dependencies = [
  "bottlerocket-model-derive",
  "bottlerocket-modeled-types",
@@ -5170,7 +5171,7 @@ dependencies = [
 [[package]]
 name = "settings-extension-ecs"
 version = "0.1.0"
-source = "git+https://github.com/bottlerocket-os/bottlerocket-settings-sdk?tag=bottlerocket-settings-models-v0.16.0#eed641b1a6ad238ef0782c7bfb8caa153dd1c5be"
+source = "git+file:///home/fedora/bottlerocket-settings-sdk?branch=image-verification-plugins#6970fba3be0e33be127cf4e1e86a5fa6d8ec4fc7"
 dependencies = [
  "bottlerocket-model-derive",
  "bottlerocket-modeled-types",
@@ -5183,7 +5184,7 @@ dependencies = [
 [[package]]
 name = "settings-extension-host-containers"
 version = "0.2.0"
-source = "git+https://github.com/bottlerocket-os/bottlerocket-settings-sdk?tag=bottlerocket-settings-models-v0.16.0#eed641b1a6ad238ef0782c7bfb8caa153dd1c5be"
+source = "git+file:///home/fedora/bottlerocket-settings-sdk?branch=image-verification-plugins#6970fba3be0e33be127cf4e1e86a5fa6d8ec4fc7"
 dependencies = [
  "bottlerocket-model-derive",
  "bottlerocket-modeled-types",
@@ -5194,9 +5195,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "settings-extension-image-verification-plugins"
+version = "0.1.0"
+source = "git+file:///home/fedora/bottlerocket-settings-sdk?branch=image-verification-plugins#6970fba3be0e33be127cf4e1e86a5fa6d8ec4fc7"
+dependencies = [
+ "bottlerocket-model-derive",
+ "bottlerocket-modeled-types",
+ "bottlerocket-settings-sdk",
+ "env_logger",
+ "lazy_static",
+ "regex",
+ "serde",
+ "serde_json",
+ "toml",
+]
+
+[[package]]
 name = "settings-extension-kernel"
 version = "0.1.0"
-source = "git+https://github.com/bottlerocket-os/bottlerocket-settings-sdk?tag=bottlerocket-settings-models-v0.16.0#eed641b1a6ad238ef0782c7bfb8caa153dd1c5be"
+source = "git+file:///home/fedora/bottlerocket-settings-sdk?branch=image-verification-plugins#6970fba3be0e33be127cf4e1e86a5fa6d8ec4fc7"
 dependencies = [
  "bottlerocket-model-derive",
  "bottlerocket-modeled-types",
@@ -5209,7 +5226,7 @@ dependencies = [
 [[package]]
 name = "settings-extension-kubelet-device-plugins"
 version = "0.3.0"
-source = "git+https://github.com/bottlerocket-os/bottlerocket-settings-sdk?tag=bottlerocket-settings-models-v0.16.0#eed641b1a6ad238ef0782c7bfb8caa153dd1c5be"
+source = "git+file:///home/fedora/bottlerocket-settings-sdk?branch=image-verification-plugins#6970fba3be0e33be127cf4e1e86a5fa6d8ec4fc7"
 dependencies = [
  "bottlerocket-model-derive",
  "bottlerocket-modeled-types",
@@ -5221,8 +5238,8 @@ dependencies = [
 
 [[package]]
 name = "settings-extension-kubernetes"
-version = "0.5.0"
-source = "git+https://github.com/bottlerocket-os/bottlerocket-settings-sdk?tag=bottlerocket-settings-models-v0.16.0#eed641b1a6ad238ef0782c7bfb8caa153dd1c5be"
+version = "0.6.0"
+source = "git+file:///home/fedora/bottlerocket-settings-sdk?branch=image-verification-plugins#6970fba3be0e33be127cf4e1e86a5fa6d8ec4fc7"
 dependencies = [
  "bottlerocket-model-derive",
  "bottlerocket-modeled-types",
@@ -5236,7 +5253,7 @@ dependencies = [
 [[package]]
 name = "settings-extension-metrics"
 version = "0.1.0"
-source = "git+https://github.com/bottlerocket-os/bottlerocket-settings-sdk?tag=bottlerocket-settings-models-v0.16.0#eed641b1a6ad238ef0782c7bfb8caa153dd1c5be"
+source = "git+file:///home/fedora/bottlerocket-settings-sdk?branch=image-verification-plugins#6970fba3be0e33be127cf4e1e86a5fa6d8ec4fc7"
 dependencies = [
  "bottlerocket-model-derive",
  "bottlerocket-modeled-types",
@@ -5249,7 +5266,7 @@ dependencies = [
 [[package]]
 name = "settings-extension-motd"
 version = "0.1.0"
-source = "git+https://github.com/bottlerocket-os/bottlerocket-settings-sdk?tag=bottlerocket-settings-models-v0.16.0#eed641b1a6ad238ef0782c7bfb8caa153dd1c5be"
+source = "git+file:///home/fedora/bottlerocket-settings-sdk?branch=image-verification-plugins#6970fba3be0e33be127cf4e1e86a5fa6d8ec4fc7"
 dependencies = [
  "bottlerocket-settings-sdk",
  "bottlerocket-string-impls-for",
@@ -5262,7 +5279,7 @@ dependencies = [
 [[package]]
 name = "settings-extension-network"
 version = "0.1.0"
-source = "git+https://github.com/bottlerocket-os/bottlerocket-settings-sdk?tag=bottlerocket-settings-models-v0.16.0#eed641b1a6ad238ef0782c7bfb8caa153dd1c5be"
+source = "git+file:///home/fedora/bottlerocket-settings-sdk?branch=image-verification-plugins#6970fba3be0e33be127cf4e1e86a5fa6d8ec4fc7"
 dependencies = [
  "bottlerocket-model-derive",
  "bottlerocket-modeled-types",
@@ -5275,7 +5292,7 @@ dependencies = [
 [[package]]
 name = "settings-extension-ntp"
 version = "0.1.0"
-source = "git+https://github.com/bottlerocket-os/bottlerocket-settings-sdk?tag=bottlerocket-settings-models-v0.16.0#eed641b1a6ad238ef0782c7bfb8caa153dd1c5be"
+source = "git+file:///home/fedora/bottlerocket-settings-sdk?branch=image-verification-plugins#6970fba3be0e33be127cf4e1e86a5fa6d8ec4fc7"
 dependencies = [
  "bottlerocket-model-derive",
  "bottlerocket-modeled-types",
@@ -5288,7 +5305,7 @@ dependencies = [
 [[package]]
 name = "settings-extension-nvidia-container-runtime"
 version = "0.1.0"
-source = "git+https://github.com/bottlerocket-os/bottlerocket-settings-sdk?tag=bottlerocket-settings-models-v0.16.0#eed641b1a6ad238ef0782c7bfb8caa153dd1c5be"
+source = "git+file:///home/fedora/bottlerocket-settings-sdk?branch=image-verification-plugins#6970fba3be0e33be127cf4e1e86a5fa6d8ec4fc7"
 dependencies = [
  "bottlerocket-model-derive",
  "bottlerocket-modeled-types",
@@ -5301,7 +5318,7 @@ dependencies = [
 [[package]]
 name = "settings-extension-oci-defaults"
 version = "0.1.0"
-source = "git+https://github.com/bottlerocket-os/bottlerocket-settings-sdk?tag=bottlerocket-settings-models-v0.16.0#eed641b1a6ad238ef0782c7bfb8caa153dd1c5be"
+source = "git+file:///home/fedora/bottlerocket-settings-sdk?branch=image-verification-plugins#6970fba3be0e33be127cf4e1e86a5fa6d8ec4fc7"
 dependencies = [
  "bottlerocket-model-derive",
  "bottlerocket-modeled-types",
@@ -5315,7 +5332,7 @@ dependencies = [
 [[package]]
 name = "settings-extension-oci-hooks"
 version = "0.1.0"
-source = "git+https://github.com/bottlerocket-os/bottlerocket-settings-sdk?tag=bottlerocket-settings-models-v0.16.0#eed641b1a6ad238ef0782c7bfb8caa153dd1c5be"
+source = "git+file:///home/fedora/bottlerocket-settings-sdk?branch=image-verification-plugins#6970fba3be0e33be127cf4e1e86a5fa6d8ec4fc7"
 dependencies = [
  "bottlerocket-model-derive",
  "bottlerocket-modeled-types",
@@ -5328,7 +5345,7 @@ dependencies = [
 [[package]]
 name = "settings-extension-pki"
 version = "0.1.0"
-source = "git+https://github.com/bottlerocket-os/bottlerocket-settings-sdk?tag=bottlerocket-settings-models-v0.16.0#eed641b1a6ad238ef0782c7bfb8caa153dd1c5be"
+source = "git+file:///home/fedora/bottlerocket-settings-sdk?branch=image-verification-plugins#6970fba3be0e33be127cf4e1e86a5fa6d8ec4fc7"
 dependencies = [
  "bottlerocket-model-derive",
  "bottlerocket-modeled-types",
@@ -5341,7 +5358,7 @@ dependencies = [
 [[package]]
 name = "settings-extension-updates"
 version = "0.1.0"
-source = "git+https://github.com/bottlerocket-os/bottlerocket-settings-sdk?tag=bottlerocket-settings-models-v0.16.0#eed641b1a6ad238ef0782c7bfb8caa153dd1c5be"
+source = "git+file:///home/fedora/bottlerocket-settings-sdk?branch=image-verification-plugins#6970fba3be0e33be127cf4e1e86a5fa6d8ec4fc7"
 dependencies = [
  "bottlerocket-model-derive",
  "bottlerocket-modeled-types",
