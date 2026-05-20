@@ -199,6 +199,73 @@ impl Checker for BR01040400Checker {
 
 // =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<=
 
+pub struct BR01040500Checker {}
+
+impl Checker for BR01040500Checker {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
+        bloodhound::check_sysctl_gte(sac, "kernel.yama.ptrace_scope", 1)
+    }
+
+    fn metadata(&self) -> CheckerMetadata {
+        CheckerMetadata {
+            title: "Ensure ptrace scope is restricted".to_string(),
+            id: "1.4.5".to_string(),
+            level: 1,
+            name: "br01040500".to_string(),
+            mode: Mode::Automatic,
+        }
+    }
+}
+
+// =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<=
+
+pub struct BR01040600Checker {}
+
+impl Checker for BR01040600Checker {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
+        bloodhound::check_sysctl_gte(sac, "kernel.kptr_restrict", 1)
+    }
+
+    fn metadata(&self) -> CheckerMetadata {
+        CheckerMetadata {
+            title: "Ensure kernel pointer restriction is enabled".to_string(),
+            id: "1.4.6".to_string(),
+            level: 1,
+            name: "br01040600".to_string(),
+            mode: Mode::Automatic,
+        }
+    }
+}
+
+// =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<=
+
+pub struct BR01040700Checker {}
+
+impl Checker for BR01040700Checker {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
+        check_output_contains!(
+            sac,
+            SYSCTL_CMD,
+            &["kernel.dmesg_restrict"],
+            &["kernel.dmesg_restrict = 1"],
+            "unable to verify kernel.dmesg_restrict setting",
+            "dmesg restriction is not enabled"
+        )
+    }
+
+    fn metadata(&self) -> CheckerMetadata {
+        CheckerMetadata {
+            title: "Ensure dmesg restriction is enabled".to_string(),
+            id: "1.4.7".to_string(),
+            level: 1,
+            name: "br01040700".to_string(),
+            mode: Mode::Automatic,
+        }
+    }
+}
+
+// =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<=
+
 pub struct BR01050100Checker {}
 
 impl Checker for BR01050100Checker {
@@ -2018,5 +2085,152 @@ mod tests {
         let checker = BR04010101Checker {};
         let result = checker.execute(&sac);
         assert_eq!(result.status, CheckStatus::SKIP);
+    }
+
+    // BR01040500Checker tests
+    #[test]
+    pub fn test_br01040500checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            SYSCTL_CMD,
+            &["kernel.yama.ptrace_scope"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: "kernel.yama.ptrace_scope = 1".into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR01040500Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_br01040500checker_pass_value_2() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            SYSCTL_CMD,
+            &["kernel.yama.ptrace_scope"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: "kernel.yama.ptrace_scope = 2".into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR01040500Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_br01040500checker_fail() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            SYSCTL_CMD,
+            &["kernel.yama.ptrace_scope"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: "kernel.yama.ptrace_scope = 0".into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR01040500Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_br01040500checker_skip() {
+        let sac = UnitTestSystemAccess::default();
+        let checker = BR01040500Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::SKIP);
+    }
+
+    // BR01040600Checker tests
+    #[test]
+    pub fn test_br01040600checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            SYSCTL_CMD,
+            &["kernel.kptr_restrict"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: "kernel.kptr_restrict = 1".into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR01040600Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_br01040600checker_pass_value_2() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            SYSCTL_CMD,
+            &["kernel.kptr_restrict"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: "kernel.kptr_restrict = 2".into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR01040600Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_br01040600checker_fail() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            SYSCTL_CMD,
+            &["kernel.kptr_restrict"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: "kernel.kptr_restrict = 0".into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR01040600Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    // BR01040700Checker tests
+    #[test]
+    pub fn test_br01040700checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            SYSCTL_CMD,
+            &["kernel.dmesg_restrict"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: "kernel.dmesg_restrict = 1".into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR01040700Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_br01040700checker_fail() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_command(
+            SYSCTL_CMD,
+            &["kernel.dmesg_restrict"],
+            Output {
+                status: ExitStatus::default(),
+                stdout: "kernel.dmesg_restrict = 0".into(),
+                stderr: vec![],
+            },
+        );
+        let checker = BR01040700Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
     }
 }

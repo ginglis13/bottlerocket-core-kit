@@ -174,6 +174,38 @@ macro_rules! check_output_contains {
     }};
 }
 
+/// Executes a sysctl command and checks that the returned integer value is >= min_value.
+pub fn check_sysctl_gte(
+    sac: &dyn SystemAccess,
+    key: &str,
+    min_value: i64,
+) -> CheckerResult {
+    let mut result = CheckerResult::default();
+
+    if let Ok(output) = sac.command_output("/usr/sbin/sysctl", &[key]) {
+        if output.status.success() {
+            let stdout = String::from_utf8_lossy(&output.stdout);
+            let value_str = stdout.trim().rsplit('=').next().unwrap_or("").trim();
+            if let Ok(value) = value_str.parse::<i64>() {
+                if value >= min_value {
+                    result.status = CheckStatus::PASS;
+                } else {
+                    result.error = format!("{key} = {value}, expected >= {min_value}");
+                    result.status = CheckStatus::FAIL;
+                }
+            } else {
+                result.error = format!("unable to parse {key} value: {value_str}");
+            }
+        } else {
+            result.error = format!("unable to verify {key} setting");
+        }
+    } else {
+        result.error = format!("unable to verify {key} setting");
+    }
+
+    result
+}
+
 /// Tests whether a file has the given permission mode bits set, returning a `Result` based on the results.
 pub fn check_file_not_mode(sac: &dyn SystemAccess, file_path: &str, mode: u32) -> CheckerResult {
     let mut result = CheckerResult::default();

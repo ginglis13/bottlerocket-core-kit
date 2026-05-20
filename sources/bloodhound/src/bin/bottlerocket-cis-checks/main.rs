@@ -27,6 +27,9 @@ fn main() {
         "br01040200" => Box::new(BR01040200Checker {}),
         "br01040300" => Box::new(BR01040300Checker {}),
         "br01040400" => Box::new(BR01040400Checker {}),
+        "br01040500" => Box::new(BR01040500Checker {}),
+        "br01040600" => Box::new(BR01040600Checker {}),
+        "br01040700" => Box::new(BR01040700Checker {}),
         "br01050100" => Box::new(BR01050100Checker {}),
         "br01050200" => Box::new(BR01050200Checker {}),
         "br01060000" => Box::new(ManualChecker {
