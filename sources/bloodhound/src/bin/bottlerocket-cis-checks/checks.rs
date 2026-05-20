@@ -91,6 +91,52 @@ impl Checker for BR01030100Checker {
 
 // =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<=
 
+pub struct BR01030200Checker {}
+
+const SECURE_BOOT_EFI_VAR: &str =
+    "/sys/firmware/efi/efivars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c";
+
+impl Checker for BR01030200Checker {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
+        use std::io::Read;
+        let mut result = CheckerResult::default();
+
+        if let Ok(mut file) = sac.open(SECURE_BOOT_EFI_VAR) {
+            let mut buf = [0u8; 5];
+            match file.read_exact(&mut buf) {
+                Ok(()) => {
+                    // First 4 bytes are EFI variable attributes, 5th byte is the value
+                    if buf[4] == 1 {
+                        result.status = CheckStatus::PASS;
+                    } else {
+                        result.error = "Secure Boot is not enabled".to_string();
+                        result.status = CheckStatus::FAIL;
+                    }
+                }
+                Err(_) => {
+                    result.error = "unable to read Secure Boot EFI variable".to_string();
+                }
+            }
+        } else {
+            result.error = "unable to access Secure Boot EFI variable".to_string();
+        }
+
+        result
+    }
+
+    fn metadata(&self) -> CheckerMetadata {
+        CheckerMetadata {
+            title: "Ensure Secure Boot is enabled".to_string(),
+            id: "1.3.2".to_string(),
+            level: 1,
+            name: "br01030200".to_string(),
+            mode: Mode::Automatic,
+        }
+    }
+}
+
+// =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<=
+
 pub struct BR01040100Checker {}
 
 impl Checker for BR01040100Checker {
@@ -2314,6 +2360,35 @@ mod tests {
     pub fn test_br01050400checker_file_missing() {
         let sac = UnitTestSystemAccess::default();
         let checker = BR01050400Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::SKIP);
+    }
+
+    // BR01030200Checker tests
+    #[test]
+    pub fn test_br01030200checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        // 4 attribute bytes + 1 value byte (1 = enabled)
+        sac.register_file(SECURE_BOOT_EFI_VAR, "\x06\x00\x00\x00\x01");
+        let checker = BR01030200Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_br01030200checker_fail() {
+        let mut sac = UnitTestSystemAccess::default();
+        // 4 attribute bytes + 1 value byte (0 = disabled)
+        sac.register_file(SECURE_BOOT_EFI_VAR, "\x06\x00\x00\x00\x00");
+        let checker = BR01030200Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_br01030200checker_file_missing() {
+        let sac = UnitTestSystemAccess::default();
+        let checker = BR01030200Checker {};
         let result = checker.execute(&sac);
         assert_eq!(result.status, CheckStatus::SKIP);
     }

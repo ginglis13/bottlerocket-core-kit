@@ -23,6 +23,7 @@ fn main() {
             level: 1,
         }),
         "br01030100" => Box::new(BR01030100Checker {}),
+        "br01030200" => Box::new(BR01030200Checker {}),
         "br01040100" => Box::new(BR01040100Checker {}),
         "br01040200" => Box::new(BR01040200Checker {}),
         "br01040300" => Box::new(BR01040300Checker {}),
