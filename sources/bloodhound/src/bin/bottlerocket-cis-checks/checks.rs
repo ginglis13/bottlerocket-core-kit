@@ -396,6 +396,82 @@ impl Checker for BR01050200Checker {
 
 // =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<=
 
+pub struct BR01050300Checker {}
+
+const SELINUX_POLICY_FILE: &str = "/sys/fs/selinux/policy";
+
+impl Checker for BR01050300Checker {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
+        use std::io::Read;
+        let mut result = CheckerResult::default();
+
+        if let Ok(mut file) = sac.open(SELINUX_POLICY_FILE) {
+            let mut buf = Vec::new();
+            if file.read_to_end(&mut buf).is_err() {
+                result.error = "unable to read SELinux policy file".to_string();
+                return result;
+            }
+
+            // Binary policy format (from /sys/fs/selinux/policy):
+            // The polcap ebitmap node count is at offset 40.
+            // After the polcap nodes (each 12 bytes), skip 4 bytes (mapsize),
+            // then the permissive ebitmap highbit follows.
+            //
+            // Formula (matching the CIS benchmark audit script):
+            //   polcap_node_count = u32 at offset 40
+            //   permissive_offset = 44 + polcap_node_count * 12 + 4
+            //   permissive_highbit = u32 at permissive_offset
+            //
+            // If permissive_highbit > 0, permissive types exist.
+
+            if buf.len() < 44 {
+                result.error = "SELinux policy file too small".to_string();
+                return result;
+            }
+
+            let polcap_node_count =
+                u32::from_le_bytes([buf[40], buf[41], buf[42], buf[43]]);
+
+            let permissive_offset = 44 + (polcap_node_count as usize * 12) + 4;
+
+            if buf.len() < permissive_offset + 4 {
+                result.error = "SELinux policy file truncated".to_string();
+                return result;
+            }
+
+            let permissive_highbit = u32::from_le_bytes([
+                buf[permissive_offset],
+                buf[permissive_offset + 1],
+                buf[permissive_offset + 2],
+                buf[permissive_offset + 3],
+            ]);
+
+            if permissive_highbit > 0 {
+                result.error = "SELinux permissive types detected".to_string();
+                result.status = CheckStatus::FAIL;
+            } else {
+                result.status = CheckStatus::PASS;
+            }
+        } else {
+            result.error = "unable to access SELinux policy file".to_string();
+        }
+
+        result
+    }
+
+    fn metadata(&self) -> CheckerMetadata {
+        CheckerMetadata {
+            title: "Ensure SELinux has no permissive types".to_string(),
+            id: "1.5.3".to_string(),
+            level: 2,
+            name: "br01050300".to_string(),
+            mode: Mode::Automatic,
+        }
+    }
+}
+
+// =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<=
+
 pub struct BR01050400Checker {}
 
 const SHADOW_FILE: &str = "/etc/shadow";
@@ -2389,6 +2465,50 @@ mod tests {
     pub fn test_br01030200checker_file_missing() {
         let sac = UnitTestSystemAccess::default();
         let checker = BR01030200Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::SKIP);
+    }
+
+    // BR01050300Checker tests
+    fn build_selinux_policy(polcap_node_count: u32, permissive_highbit: u32) -> String {
+        let mut buf = Vec::new();
+        // 40 bytes header (magic, version, etc - not parsed by our checker)
+        buf.extend_from_slice(&[0x41u8; 40]);
+        // polcap_node_count at offset 40
+        buf.extend_from_slice(&polcap_node_count.to_le_bytes());
+        // polcap nodes (12 bytes each, all 0x41 to stay valid UTF-8)
+        for _ in 0..polcap_node_count {
+            buf.extend_from_slice(&[0x41u8; 12]);
+        }
+        // mapsize field (4 bytes, skipped by our parser)
+        buf.extend_from_slice(&64u32.to_le_bytes());
+        // permissive_highbit
+        buf.extend_from_slice(&permissive_highbit.to_le_bytes());
+        String::from_utf8(buf).unwrap()
+    }
+
+    #[test]
+    pub fn test_br01050300checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file(SELINUX_POLICY_FILE, &build_selinux_policy(1, 0));
+        let checker = BR01050300Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_br01050300checker_fail() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file(SELINUX_POLICY_FILE, &build_selinux_policy(1, 64));
+        let checker = BR01050300Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_br01050300checker_file_missing() {
+        let sac = UnitTestSystemAccess::default();
+        let checker = BR01050300Checker {};
         let result = checker.execute(&sac);
         assert_eq!(result.status, CheckStatus::SKIP);
     }

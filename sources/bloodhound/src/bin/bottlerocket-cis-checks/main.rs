@@ -33,6 +33,7 @@ fn main() {
         "br01040700" => Box::new(BR01040700Checker {}),
         "br01050100" => Box::new(BR01050100Checker {}),
         "br01050200" => Box::new(BR01050200Checker {}),
+        "br01050300" => Box::new(BR01050300Checker {}),
         "br01050400" => Box::new(BR01050400Checker {}),
         "br01060000" => Box::new(ManualChecker {
             name: cmd_name.to_string(),
