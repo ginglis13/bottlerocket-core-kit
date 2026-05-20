@@ -350,6 +350,57 @@ impl Checker for BR01050200Checker {
 
 // =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<=
 
+pub struct BR01050400Checker {}
+
+const SHADOW_FILE: &str = "/etc/shadow";
+
+impl Checker for BR01050400Checker {
+    fn execute(&self, sac: &dyn SystemAccess) -> CheckerResult {
+        let mut result = CheckerResult::default();
+
+        if let Ok(file) = sac.open(SHADOW_FILE) {
+            use std::io::{BufRead, BufReader};
+            let reader = BufReader::new(file);
+            for line in reader.lines() {
+                let content = line.unwrap_or_default();
+                if content.is_empty() || content.starts_with('#') {
+                    continue;
+                }
+                let parts: Vec<&str> = content.splitn(3, ':').collect();
+                if parts.len() < 2 {
+                    continue;
+                }
+                let password = parts[1];
+                if password == "*" || password == "!!" || password == "!" || password == "*LOCKED*"
+                    || password.starts_with('!')
+                {
+                    continue;
+                }
+                result.error = format!("account '{}' is not locked", parts[0]);
+                result.status = CheckStatus::FAIL;
+                return result;
+            }
+            result.status = CheckStatus::PASS;
+        } else {
+            result.error = "unable to read /etc/shadow".to_string();
+        }
+
+        result
+    }
+
+    fn metadata(&self) -> CheckerMetadata {
+        CheckerMetadata {
+            title: "Ensure all accounts in /etc/shadow are locked".to_string(),
+            id: "1.5.4".to_string(),
+            level: 1,
+            name: "br01050400".to_string(),
+            mode: Mode::Automatic,
+        }
+    }
+}
+
+// =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<= =>o.o<=
+
 pub struct BR02010101Checker {}
 
 impl Checker for BR02010101Checker {
@@ -2232,5 +2283,38 @@ mod tests {
         let checker = BR01040700Checker {};
         let result = checker.execute(&sac);
         assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    // BR01050400Checker tests
+    #[test]
+    pub fn test_br01050400checker_pass() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file(
+            SHADOW_FILE,
+            "root:*LOCKED*:19000::::::\nnobody:!:19000::::::\n",
+        );
+        let checker = BR01050400Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::PASS);
+    }
+
+    #[test]
+    pub fn test_br01050400checker_fail() {
+        let mut sac = UnitTestSystemAccess::default();
+        sac.register_file(
+            SHADOW_FILE,
+            "root:*LOCKED*:19000::::::\nuser:$6$rounds=4096$salt$hash:19000::::::\n",
+        );
+        let checker = BR01050400Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::FAIL);
+    }
+
+    #[test]
+    pub fn test_br01050400checker_file_missing() {
+        let sac = UnitTestSystemAccess::default();
+        let checker = BR01050400Checker {};
+        let result = checker.execute(&sac);
+        assert_eq!(result.status, CheckStatus::SKIP);
     }
 }
