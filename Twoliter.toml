@@ -1,5 +1,6 @@
 schema-version = 2
-release-version = "14.5.0"
+# pointing to my private kit
+release-version = "14.5.0-cis"
 project-vendor = "Bottlerocket"
 
 [vendor.bottlerocket]
