@@ -55,7 +55,7 @@ Additional PCRs used for measurements (not bound to keys):
 
 | PCR | Purpose | Usage |
 |-----|---------|-------|
-| 8 | OS settings | Measured after configuration completes |
+| 8 | EC2 user data and OS settings | Measured before and after configuration completes |
 | 10 | (Reserved) | Reserved for future use |
 
 **PCR selection logic:**
@@ -338,17 +338,50 @@ unit waits only on the raw device node, not the by-partlabel symlink recreated b
 
 Bottlerocket extends TPM2 PCRs at various boot stages to establish a cryptographic chain of trust.
 
-### PCR 8: OS Settings
+### PCR 8: User Data and OS Settings
+
+PCR 8 is extended exactly twice per boot, in this order.
+
+#### EC2 user data
+
+**Service:** `measure-user-data.service`
+
+**What's measured:** The literal prefix `ec2-imds-user-data:v1:` followed by the raw user data bytes exactly as IMDS returns them (no decompression, decoding, or trimming), or the literal `ec2-imds-user-data:v1:absent` when IMDS returns no user data
+
+**When:** After `tpm2.target`, before `early-boot-config.service` and `settings-applier.service`
+
+**Purpose:** Bind the configuration supplied at launch before it is applied
+
+#### OS settings
 
 **Service:** `measure-settings.service`
 
-**What's measured:** Canonicalized OS settings from the API
+**What's measured:** OLPC canonical JSON of the settings tree, as printed by `apiclient get settings --canonicalize`, followed by a newline. `settings.updates.seed` and `settings.network.hostname` are always excluded.
 
 **When:** After `settings-applier.service` and `apiserver.service`, before `bootstrap-commands.service`
 
 **Purpose:** Detect unauthorized configuration changes
 
 **Note:** This measurement occurs before any external configuration can be applied and before any external code can run.
+
+The `settings.measurement` table adjusts what is measured:
+
+- `excluded-settings` lists additional settings nodes to exclude, e.g. `["host-containers", "aws.region"]`. Each entry excludes the node and everything beneath it. The bare `settings` node, empty strings, wildcards, and `settings.measurement` itself are rejected, so the policy is always measured.
+- `region-agnostic-image-sources = true` measures Amazon ECR image sources in `settings.host-containers.*.source` and `settings.bootstrap-containers.*.source` with the region segment of the registry host replaced by the literal placeholder `{region}`, e.g. `123456789012.dkr.ecr.{region}.amazonaws.com/agent@sha256:...`. The account ID, `-fips` marker, partition suffix, repository, tag, and digest are retained; sources outside ECR are unchanged. This lets the same image replicated across regions produce the same PCR 8 value. Only the measured bytes change; stored settings are not modified.
+
+Changes to `settings.measurement` take effect at the next boot.
+
+#### Recomputing PCR 8
+
+No TPM event log is written for these extensions, so a verifier recomputes the expected value from the same inputs:
+
+```
+user_data = "ec2-imds-user-data:v1:" + <raw user data>      # or "ec2-imds-user-data:v1:absent"
+settings  = <canonical settings JSON, with exclusions and rewrites applied> + "\n"
+PCR8      = SHA256( SHA256( 0x00 * 32 || SHA256(user_data) ) || SHA256(settings) )
+```
+
+The same construction applies to the SHA-384 and SHA-512 banks with the corresponding hash and initial value length.
 
 ### PCR 9: Kernel Command Line
 

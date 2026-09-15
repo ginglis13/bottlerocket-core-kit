@@ -35,6 +35,34 @@ interface for encrypting and managing encrypted storage resources including:
 - `measure pcrphase <phase>` - Measure boot phase into PCR 11
   - Valid phases: `sysinit`, `preconfigured`, `configured`, `ready`, `shutdown`, `final`
 
+## PCR 8
+
+PCR 8 is extended exactly twice per boot, in this order:
+
+1. `measure-user-data.service` runs `measure user-data` before settings are applied. The
+   measured bytes are `ec2-imds-user-data:v1:` followed by the raw user data exactly as IMDS
+   returns it, or the literal `ec2-imds-user-data:v1:absent` when IMDS has no user data.
+2. `measure-settings.service` runs `measure settings` after `settings-applier.service`, before
+   `bootstrap-commands.service`. The measured bytes are the OLPC canonical JSON of the settings
+   tree (as printed by `apiclient get settings --canonicalize`), followed by a newline.
+
+`settings.updates.seed` and `settings.network.hostname` are always excluded from the settings
+measurement. The `settings.measurement` table adjusts what else is measured:
+
+- `excluded-settings` lists additional settings nodes to exclude, for example
+  `["host-containers", "aws.region"]`. Each entry excludes the node and everything beneath it.
+  The bare `settings` node, empty strings, wildcards, and `settings.measurement` itself are
+  rejected.
+- `region-agnostic-image-sources = true` measures Amazon ECR image sources in
+  `settings.host-containers.*.source` and `settings.bootstrap-containers.*.source` with the
+  region segment of the registry host replaced by the literal placeholder `{region}`, e.g.
+  `123456789012.dkr.ecr.{region}.amazonaws.com/agent@sha256:...`. The account ID, `-fips`
+  marker, partition suffix, repository, tag, and digest are retained, and sources outside ECR
+  are unchanged. The stored settings are not modified; only the measured bytes are.
+
+Changes to `settings.measurement` take effect at the next boot. No TPM event log is written for
+these extensions; a verifier recomputes the expected value from the same inputs.
+
 ## Aliases
 
 For convenience, the following aliases are supported:
