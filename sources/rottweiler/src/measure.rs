@@ -32,9 +32,14 @@ const USER_DATA_PRESENT_PREFIX: &[u8] = b"ec2-imds-user-data:v1:";
 /// can always distinguish "user data present but zero-length" from "user data absent".
 const USER_DATA_ABSENT_MARKER: &[u8] = b"ec2-imds-user-data:v1:absent";
 
-/// Measure OS settings into PCR 8
+/// Measure OS settings into PCR 8.
+///
+/// The measured bytes are the OLPC canonical JSON of `settings`, minus the built-in exclusions
+/// and any the customer configured in `settings.measurement.excluded-settings`, followed by a
+/// newline (apiclient's output framing).
 pub fn os_settings() -> Result<()> {
-    let data = system::apiclient_get_settings()?;
+    let config = system::apiclient_get_measurement_config()?;
+    let data = system::apiclient_get_settings(&config, true)?;
     extend_pcr(PCR_SETTINGS, &data)
 }
 

@@ -1,3 +1,4 @@
+use serde::Deserialize;
 use snafu::FromString;
 use snafu::prelude::*;
 use std::io::Write;
@@ -216,21 +217,91 @@ pub(crate) fn ephemeral_encryption_keys_enabled() -> Result<bool> {
     Ok(features.ephemeral_encryption_keys)
 }
 
-/// Get canonicalized settings from apiclient, excluding seed and hostname
-pub fn apiclient_get_settings() -> Result<Zeroizing<Vec<u8>>> {
-    execute(
-        APICLIENT,
-        &[
-            "get",
-            "settings",
-            "--exclude",
-            "settings.updates.seed",
-            "--exclude",
-            "settings.network.hostname",
-            "--canonicalize",
-        ],
-        None,
-    )
+/// Settings that are always excluded from the PCR 8 measurement, regardless of what the
+/// customer configures in `settings.measurement`.
+const ALWAYS_EXCLUDED_SETTINGS: &[&str] = &["settings.updates.seed", "settings.network.hostname"];
+
+/// The customer-controlled measurement policy, read from `settings.measurement`.
+///
+/// Every field is optional in the API; the defaults here (no extra exclusions) reproduce the
+/// behavior of a system where `settings.measurement` is not configured at all.
+#[derive(Debug, Default, Deserialize, PartialEq)]
+#[serde(default, rename_all = "kebab-case")]
+pub struct MeasurementConfig {
+    pub excluded_settings: Vec<String>,
+}
+
+/// Read `settings.measurement` from the API.
+///
+/// `apiclient get settings.measurement` returns `{"settings":{"measurement":{...}}}` when the
+/// table exists, and `{}` when nothing under that prefix has been set; both are handled here
+/// and a missing table yields `MeasurementConfig::default()`.
+pub fn apiclient_get_measurement_config() -> Result<MeasurementConfig> {
+    let output = execute(APICLIENT, &["get", "settings.measurement"], None)?;
+    parse_measurement_config(&output)
+}
+
+/// Extract the measurement policy from an `apiclient get settings.measurement` response.
+fn parse_measurement_config(response: &[u8]) -> Result<MeasurementConfig> {
+    let value: serde_json::Value = serde_json::from_slice(response)
+        .with_whatever_context(|_| "failed to parse settings.measurement response as JSON")?;
+    match value.pointer("/settings/measurement") {
+        Some(measurement) => serde_json::from_value(measurement.clone())
+            .with_whatever_context(|_| "failed to parse settings.measurement"),
+        None => Ok(MeasurementConfig::default()),
+    }
+}
+
+/// Turn customer-supplied exclusions into `settings.<node>` prefixes for `apiclient get --exclude`.
+///
+/// The settings model already rejects dangerous values; this repeats those checks as defense in
+/// depth so that a value which somehow reached the datastore can never hide the whole tree or
+/// the measurement policy itself. Rejected entries are logged and skipped.
+fn normalize_exclusions(excluded: &[String]) -> Vec<String> {
+    excluded
+        .iter()
+        .filter_map(|raw| {
+            let trimmed = raw.trim();
+            let node = trimmed.strip_prefix("settings.").unwrap_or(trimmed);
+            let rejected = node.is_empty()
+                || node == "settings"
+                || node.contains('*')
+                || node == "measurement"
+                || node.starts_with("measurement.");
+            if rejected {
+                log::warn!("ignoring disallowed measurement exclusion {:?}", raw);
+                None
+            } else {
+                Some(format!("settings.{}", node))
+            }
+        })
+        .collect()
+}
+
+/// Get settings from apiclient for measurement, applying the built-in exclusions plus any the
+/// customer configured in `settings.measurement.excluded-settings`.
+///
+/// With `canonicalize` set, apiclient emits OLPC canonical JSON, which is the historical PCR 8
+/// input. Without it, apiclient emits pretty-printed standard JSON that can be parsed and
+/// transformed before being canonicalized locally.
+pub fn apiclient_get_settings(
+    config: &MeasurementConfig,
+    canonicalize: bool,
+) -> Result<Zeroizing<Vec<u8>>> {
+    let mut args: Vec<String> = vec!["get".into(), "settings".into()];
+    for prefix in ALWAYS_EXCLUDED_SETTINGS
+        .iter()
+        .map(|s| s.to_string())
+        .chain(normalize_exclusions(&config.excluded_settings))
+    {
+        args.push("--exclude".into());
+        args.push(prefix);
+    }
+    if canonicalize {
+        args.push("--canonicalize".into());
+    }
+    let arg_refs: Vec<&str> = args.iter().map(String::as_str).collect();
+    execute(APICLIENT, &arg_refs, None)
 }
 
 /// Extend a TPM PCR with SHA256, SHA384, and SHA512 hashes
@@ -303,5 +374,111 @@ mod tests {
         let message = describe_imds_userdata_error(err).to_string();
         assert!(!message.contains(SECRET_USER_DATA));
         assert_eq!(message, "failed to fetch user data from IMDS");
+    }
+
+    // === settings.measurement parsing ===
+
+    #[test]
+    fn measurement_config_absent_table_is_default() {
+        // apiclient returns `{}` when nothing under the prefix is set
+        assert_eq!(
+            parse_measurement_config(b"{}\n").unwrap(),
+            MeasurementConfig::default()
+        );
+        assert_eq!(
+            parse_measurement_config(br#"{"settings":{}}"#).unwrap(),
+            MeasurementConfig::default()
+        );
+    }
+
+    #[test]
+    fn measurement_config_empty_table_is_default() {
+        assert_eq!(
+            parse_measurement_config(br#"{"settings":{"measurement":{}}}"#).unwrap(),
+            MeasurementConfig::default()
+        );
+    }
+
+    #[test]
+    fn measurement_config_parses_exclusions() {
+        let response = br#"{
+  "settings": {
+    "measurement": {
+      "excluded-settings": [
+        "host-containers",
+        "settings.bootstrap-containers"
+      ]
+    }
+  }
+}"#;
+        assert_eq!(
+            parse_measurement_config(response).unwrap(),
+            MeasurementConfig {
+                excluded_settings: vec![
+                    "host-containers".to_string(),
+                    "settings.bootstrap-containers".to_string()
+                ],
+            }
+        );
+    }
+
+    #[test]
+    fn measurement_config_rejects_malformed_json() {
+        assert!(parse_measurement_config(b"not json").is_err());
+    }
+
+    #[test]
+    fn measurement_config_rejects_wrong_types() {
+        let response = br#"{"settings":{"measurement":{"excluded-settings":"host-containers"}}}"#;
+        assert!(parse_measurement_config(response).is_err());
+    }
+
+    // === exclusion normalization ===
+
+    fn strings(values: &[&str]) -> Vec<String> {
+        values.iter().map(|s| s.to_string()).collect()
+    }
+
+    #[test]
+    fn normalize_adds_settings_prefix_once() {
+        assert_eq!(
+            normalize_exclusions(&strings(&[
+                "host-containers",
+                "settings.bootstrap-containers",
+                " aws.region "
+            ])),
+            strings(&[
+                "settings.host-containers",
+                "settings.bootstrap-containers",
+                "settings.aws.region"
+            ])
+        );
+    }
+
+    #[test]
+    fn normalize_drops_dangerous_entries() {
+        assert_eq!(
+            normalize_exclusions(&strings(&[
+                "",
+                "   ",
+                "settings",
+                "settings.",
+                "*",
+                "host-*",
+                "measurement",
+                "settings.measurement",
+                "measurement.excluded-settings",
+                "host-containers",
+            ])),
+            strings(&["settings.host-containers"])
+        );
+    }
+
+    #[test]
+    fn normalize_keeps_words_that_merely_start_with_measurement() {
+        assert_eq!(
+            normalize_exclusions(&strings(&["measurements", "measurement-extra"])),
+            strings(&["settings.measurements", "settings.measurement-extra"])
+        );
     }
 }

@@ -43,7 +43,7 @@ For convenience, the following aliases are supported:
 */
 
 use argh::FromArgs;
-use snafu::Whatever;
+use snafu::{ResultExt, Whatever};
 use std::path::{Path, PathBuf};
 
 mod block_device;
@@ -59,6 +59,10 @@ type Result<T> = std::result::Result<T, Whatever>;
 #[tokio::main(flavor = "current_thread")]
 #[snafu::report]
 async fn main() -> Result<()> {
+    // Warnings (for example, ignored measurement exclusions) go to the journal via stderr.
+    simplelog::SimpleLogger::init(log::LevelFilter::Info, simplelog::Config::default())
+        .whatever_context("failed to initialize logger")?;
+
     // Support aliases: "dir" -> "directory", "bdev" -> "block-device"
     // Only replace in resource-type subcommand positions
     let mut args: Vec<String> = std::env::args().collect();
