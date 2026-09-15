@@ -22,6 +22,7 @@ import (
 	"github.com/containerd/containerd/remotes/docker"
 	"github.com/containerd/errdefs"
 	"github.com/containerd/log"
+	"github.com/opencontainers/go-digest"
 	runtimespec "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -65,6 +66,7 @@ func App() *cli.App {
 		cType            string
 		useCachedImage   bool
 		command          string
+		expectedDigest   string
 	)
 
 	app := cli.NewApp()
@@ -131,6 +133,11 @@ func App() *cli.App {
 					Value:       false,
 				},
 				&cli.StringFlag{
+					Name:        "expected-digest",
+					Usage:       "`sha256:<hex>` digest of the image manifest or index; the image is verified against it and refused on mismatch (empty disables pinning)",
+					Destination: &expectedDigest,
+				},
+				&cli.StringFlag{
 					Name:        "command",
 					Usage:       "a JSON array of commands and arguments to run as the container's entrypoint",
 					Destination: &command,
@@ -142,6 +149,10 @@ func App() *cli.App {
 				if err := json.Unmarshal([]byte(command), &commandParts); err != nil {
 					return fmt.Errorf("failed to parse entrypoint command: %w", err)
 				}
+				expected, err := parseExpectedDigest(expectedDigest, source)
+				if err != nil {
+					return err
+				}
 				return runCtr(
 					containerdSocket,
 					namespace,
@@ -152,6 +163,7 @@ func App() *cli.App {
 					containerType(cType),
 					useCachedImage,
 					commandParts,
+					expected,
 				)
 			},
 		},
@@ -181,6 +193,11 @@ func App() *cli.App {
 					Name:  "label",
 					Usage: "label to add to the pulled image in `key=value` format",
 				},
+				&cli.StringFlag{
+					Name:        "expected-digest",
+					Usage:       "`sha256:<hex>` digest of the image manifest or index; the image is verified against it and refused on mismatch (empty disables pinning)",
+					Destination: &expectedDigest,
+				},
 			},
 			Action: func(c *cli.Context) error {
 				labels := c.StringSlice("label")
@@ -188,7 +205,11 @@ func App() *cli.App {
 				if err != nil {
 					return err
 				}
-				return pullImageOnly(containerdSocket, namespace, source, registryConfig, useCachedImage, labelsMap)
+				expected, err := parseExpectedDigest(expectedDigest, source)
+				if err != nil {
+					return err
+				}
+				return pullImageOnly(containerdSocket, namespace, source, registryConfig, useCachedImage, labelsMap, expected)
 			},
 		},
 		{
@@ -263,7 +284,7 @@ func SliceContains(s []string, v string) bool {
 	return false
 }
 
-func runCtr(containerdSocket string, namespace string, containerID string, source string, superpowered bool, registryConfigPath string, cType containerType, useCachedImage bool, command []string) error {
+func runCtr(containerdSocket string, namespace string, containerID string, source string, superpowered bool, registryConfigPath string, cType containerType, useCachedImage bool, command []string, expectedDigest digest.Digest) error {
 	// Check if the containerType provided is valid
 	if !cType.IsValid() {
 		return errors.New("Invalid container type")
@@ -299,7 +320,7 @@ func runCtr(containerdSocket string, namespace string, containerID string, sourc
 	var img containerd.Image
 	emptyLabels := make(map[string]string)
 
-	img, err = fetchImage(ctx, source, client, registryConfigPath, useCachedImage, emptyLabels)
+	img, err = fetchImage(ctx, source, client, registryConfigPath, useCachedImage, emptyLabels, expectedDigest)
 	if err != nil {
 		log.G(ctx).WithField("ref", source).Error(err)
 		return err
@@ -518,7 +539,7 @@ func runCtr(containerdSocket string, namespace string, containerID string, sourc
 }
 
 // pullImageOnly pulls the specified container image
-func pullImageOnly(containerdSocket string, namespace string, source string, registryConfigPath string, useCachedImage bool, labels map[string]string) error {
+func pullImageOnly(containerdSocket string, namespace string, source string, registryConfigPath string, useCachedImage bool, labels map[string]string, expectedDigest digest.Digest) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	ctx = namespaces.WithNamespace(ctx, namespace)
@@ -529,7 +550,7 @@ func pullImageOnly(containerdSocket string, namespace string, source string, reg
 	}
 	defer client.Close()
 
-	_, err = fetchImage(ctx, source, client, registryConfigPath, useCachedImage, labels)
+	_, err = fetchImage(ctx, source, client, registryConfigPath, useCachedImage, labels, expectedDigest)
 	if err != nil {
 		log.G(ctx).WithField("ref", source).Error(err)
 		return err
@@ -930,7 +951,11 @@ func withProxyEnv() oci.SpecOpts {
 }
 
 // fetchImage returns a `containerd.Image` given an image source.
-func fetchImage(ctx context.Context, source string, client *containerd.Client, registryConfigPath string, useCachedImage bool, labels map[string]string) (containerd.Image, error) {
+//
+// When an expected digest is given, the image is verified against it whether it came from the
+// image store or was freshly pulled. A cached image that fails verification is discarded and
+// the image is pulled again, so that a moved tag cannot leave a stale image in use.
+func fetchImage(ctx context.Context, source string, client *containerd.Client, registryConfigPath string, useCachedImage bool, labels map[string]string, expectedDigest digest.Digest) (containerd.Image, error) {
 	// Check the containerd image store to see if image exists
 	img, err := client.GetImage(ctx, source)
 	if err != nil {
@@ -943,13 +968,17 @@ func fetchImage(ctx context.Context, source string, client *containerd.Client, r
 	}
 	if img != nil && useCachedImage {
 		log.G(ctx).WithField("ref", source).Info("Image exists, fetching cached image from image store")
-		return img, err
+		if err := verifyFetched(ctx, client, img, expectedDigest); err == nil {
+			return img, nil
+		}
+		log.G(ctx).WithField("ref", source).Warn("Cached image did not match the expected digest, pulling image from source.")
 	}
-	return pullImage(ctx, source, client, registryConfigPath, labels)
+	return pullImage(ctx, source, client, registryConfigPath, labels, expectedDigest)
 }
 
-// pullImage pulls an image from the specified source.
-func pullImage(ctx context.Context, source string, client *containerd.Client, registryConfigPath string, labels map[string]string) (containerd.Image, error) {
+// pullImage pulls an image from the specified source, verifying it against the expected digest
+// (if any) before it is unpacked.
+func pullImage(ctx context.Context, source string, client *containerd.Client, registryConfigPath string, labels map[string]string, expectedDigest digest.Digest) (containerd.Image, error) {
 	// Handle registry config
 	var registryConfig *RegistryConfig
 	if registryConfigPath != "" {
@@ -1012,6 +1041,10 @@ func pullImage(ctx context.Context, source string, client *containerd.Client, re
 		case <-ctx.Done():
 			return nil, errors.Wrap(err, "context ended while retrying")
 		}
+	}
+
+	if err := verifyFetched(ctx, client, img, expectedDigest); err != nil {
+		return nil, err
 	}
 
 	log.G(ctx).WithField("img", img.Name()).Info("unpacking image...")

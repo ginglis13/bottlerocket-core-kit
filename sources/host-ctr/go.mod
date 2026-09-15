@@ -11,6 +11,9 @@ require (
 	github.com/containerd/containerd/api v1.11.1
 	github.com/containerd/errdefs v1.0.0
 	github.com/containerd/log v0.1.0
+	github.com/containerd/platforms v1.0.0-rc.4
+	github.com/opencontainers/go-digest v1.0.0
+	github.com/opencontainers/image-spec v1.1.1
 	github.com/opencontainers/runtime-spec v1.3.0
 	github.com/pelletier/go-toml v1.9.5
 	github.com/pkg/errors v0.9.1
@@ -69,7 +72,6 @@ require (
 	github.com/containerd/go-cni v1.1.13 // indirect
 	github.com/containerd/imgcrypt v1.1.11 // indirect
 	github.com/containerd/nri v0.12.0 // indirect
-	github.com/containerd/platforms v1.0.0-rc.4 // indirect
 	github.com/containerd/ttrpc v1.2.8 // indirect
 	github.com/containerd/typeurl v1.0.2 // indirect
 	github.com/containerd/typeurl/v2 v2.3.0 // indirect
@@ -115,8 +117,6 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.3-0.20250322232337-35a7c28c31ee // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
-	github.com/opencontainers/go-digest v1.0.0 // indirect
-	github.com/opencontainers/image-spec v1.1.1 // indirect
 	github.com/opencontainers/runtime-tools v0.9.1-0.20250523060157-0ea5ed0382a2 // indirect
 	github.com/opencontainers/selinux v1.15.1 // indirect
 	github.com/petermattis/goid v0.0.0-20260617145643-92f3c7bf09b5 // indirect

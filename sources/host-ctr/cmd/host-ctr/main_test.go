@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -433,6 +434,97 @@ func TestExtractHostFromRef(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 				assert.Equal(t, tt.wantHost, host)
+			}
+		})
+	}
+}
+
+func TestParseExpectedDigest(t *testing.T) {
+	const good = "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+	const other = "sha256:fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210"
+	tests := []struct {
+		name      string
+		flag      string
+		source    string
+		want      string
+		wantError bool
+	}{
+		{
+			name:   "unpinned tag reference",
+			flag:   "",
+			source: "123456789012.dkr.ecr.us-west-2.amazonaws.com/my-repo:latest",
+			want:   "",
+		},
+		{
+			name:   "flag only",
+			flag:   good,
+			source: "123456789012.dkr.ecr.us-west-2.amazonaws.com/my-repo:latest",
+			want:   good,
+		},
+		{
+			name:   "digest in source only",
+			flag:   "",
+			source: "123456789012.dkr.ecr.us-west-2.amazonaws.com/my-repo@" + good,
+			want:   good,
+		},
+		{
+			name:   "tag and digest in source",
+			flag:   "",
+			source: "public.ecr.aws/my-repo:v1@" + good,
+			want:   good,
+		},
+		{
+			name:   "flag agrees with source digest",
+			flag:   good,
+			source: "public.ecr.aws/my-repo@" + good,
+			want:   good,
+		},
+		{
+			name:      "flag conflicts with source digest",
+			flag:      other,
+			source:    "public.ecr.aws/my-repo@" + good,
+			wantError: true,
+		},
+		{
+			name:      "flag missing algorithm prefix",
+			flag:      "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+			source:    "public.ecr.aws/my-repo:latest",
+			wantError: true,
+		},
+		{
+			name:      "flag with wrong hex length",
+			flag:      "sha256:0123456789abcdef",
+			source:    "public.ecr.aws/my-repo:latest",
+			wantError: true,
+		},
+		{
+			name:      "flag with unsupported algorithm",
+			flag:      "sha512:" + strings.Repeat("ab", 64),
+			source:    "public.ecr.aws/my-repo:latest",
+			wantError: true,
+		},
+		{
+			name:      "malformed digest in source",
+			flag:      "",
+			source:    "public.ecr.aws/my-repo@sha256:nothex",
+			wantError: true,
+		},
+		{
+			name:   "unparseable source is left to the pull",
+			flag:   good,
+			source: "not a valid reference",
+			want:   good,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := parseExpectedDigest(tt.flag, tt.source)
+			if tt.wantError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.want, got.String())
 			}
 		})
 	}
