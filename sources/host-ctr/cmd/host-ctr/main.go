@@ -1008,10 +1008,15 @@ func pullImage(ctx context.Context, source string, client *containerd.Client, re
 	for {
 		var err error
 
-		//nolint:staticcheck // We will re-evaluate the deprecated WithSchema1Conversion
 		pullOpts := []containerd.RemoteOpt{
 			withDynamicResolver(ctx, source, registryConfig),
-			containerd.WithSchema1Conversion,
+		}
+		// Schema 1 manifests are converted on pull, which gives the stored image a different digest
+		// than the one the registry served and defeats digest pinning. Only allow the conversion
+		// for unpinned pulls; a pinned pull refuses a schema 1 response outright.
+		if expectedDigest == "" {
+			//nolint:staticcheck // We will re-evaluate the deprecated WithSchema1Conversion
+			pullOpts = append(pullOpts, containerd.WithSchema1Conversion)
 		}
 
 		if len(labels) != 0 {
