@@ -1,0 +1,17 @@
+[advisory]
+id = "BRSA-mv7bkyanpo6f"
+title = "containerd-2.3 CVE-2026-53495"
+cve = "CVE-2026-53495"
+severity = "moderate"
+description = "A flaw was found in containerd's CRI implementation on Linux. When CRI ExecSync is used by exec probes or lifecycle hooks that spawn long-lived background child processes, the drainExecSyncIO goroutine in internal/cri/server/container_execsync.go can block indefinitely because the I/O drain phase has no timeout and does not stop when the request context is canceled. Repeated ExecSync calls accumulate blocked goroutines and host memory, and the resulting exhaustion can cause the OOM killer to terminate containerd."
+
+[[advisory.products]]
+package-name = "containerd-2.3"
+patched-version = "2.3.5"
+patched-epoch = "0"
+
+[updateinfo]
+author = "giinglis"
+issue-date = 2026-09-22T20:31:38Z
+arches = ["x86_64", "aarch64"]
+version = "17.0.1"
