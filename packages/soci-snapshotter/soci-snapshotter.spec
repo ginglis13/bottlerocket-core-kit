@@ -1,7 +1,7 @@
 %global gorepo soci-snapshotter
-%global gover 0.15.0
+%global gover 0.16.0
 %global rpmver %{gover}
-%global gitrev 7716bd67e813f8e80873948e0a02d0a7c5370854
+%global gitrev 5f31db31081e681f9ce78150ea40ada1559d867a
 
 Name: %{_cross_os}soci-snapshotter
 Version: %{gover}
@@ -66,6 +66,8 @@ Provides: %{name}(k8s)
 %setup -T -D -n %{gorepo}-%{gover} -b 2 -q
 
 %build
+export GO_MAJOR="1.26"
+
 %set_cross_go_flags
 
 export LD_VERSION="-X github.com/awslabs/soci-snapshotter/version.Version=v%{gover}+bottlerocket"
