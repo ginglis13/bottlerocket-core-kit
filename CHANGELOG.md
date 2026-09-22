@@ -1,3 +1,14 @@
+# v17.0.1 (2026-09-22)
+
+## Third Party Package Updates
+* Update `containerd-2.3` to v2.3.5 ([#1053])
+* Update `soci-snapshotter` to v0.16.0 ([#1054])
+* Update `libacl`, `libattr`, `libaudit`, `libcryptsetup`, `libdevmapper`, `libelf`, `libffi`, `libglib`, `libisal`, `libncurses`, `libtss2`, `rdma-core`, and `readline` ([#1049])
+
+[#1049]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/1049
+[#1053]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/1053
+[#1054]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/1054
+
 # v17.0.0 (2026-09-18)
 
 ## OS Changes
