@@ -223,12 +223,27 @@ const ALWAYS_EXCLUDED_SETTINGS: &[&str] = &["settings.updates.seed", "settings.n
 
 /// The customer-controlled measurement policy, read from `settings.measurement`.
 ///
-/// Every field is optional in the API; the defaults here (no extra exclusions) reproduce the
-/// behavior of a system where `settings.measurement` is not configured at all.
+/// Every field is optional in the API; the defaults here (no extra exclusions, image sources
+/// measured as stored) reproduce the behavior of a system where `settings.measurement` is not
+/// configured at all.
 #[derive(Debug, Default, Deserialize, PartialEq)]
 #[serde(default, rename_all = "kebab-case")]
 pub struct MeasurementConfig {
     pub excluded_settings: Vec<String>,
+    pub image_sources: ImageSourceMeasurement,
+}
+
+/// How container image sources are measured; see [`crate::settings_measure`].
+#[derive(Clone, Copy, Debug, Default, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case")]
+pub enum ImageSourceMeasurement {
+    /// Measure the source exactly as stored.
+    #[default]
+    Full,
+    /// Replace the region in Amazon ECR private registry hosts with `{region}`.
+    RegionAgnostic,
+    /// Remove Amazon ECR private registry hosts entirely, keeping repository, tag, and digest.
+    LocationAgnostic,
 }
 
 /// Read `settings.measurement` from the API.
@@ -418,8 +433,37 @@ mod tests {
                     "host-containers".to_string(),
                     "settings.bootstrap-containers".to_string()
                 ],
+                image_sources: ImageSourceMeasurement::Full,
             }
         );
+    }
+
+    #[test]
+    fn measurement_config_parses_image_sources_modes() {
+        for (mode, expected) in [
+            ("full", ImageSourceMeasurement::Full),
+            ("region-agnostic", ImageSourceMeasurement::RegionAgnostic),
+            (
+                "location-agnostic",
+                ImageSourceMeasurement::LocationAgnostic,
+            ),
+        ] {
+            let response =
+                format!(r#"{{"settings":{{"measurement":{{"image-sources":"{mode}"}}}}}}"#);
+            assert_eq!(
+                parse_measurement_config(response.as_bytes()).unwrap(),
+                MeasurementConfig {
+                    excluded_settings: Vec::new(),
+                    image_sources: expected,
+                }
+            );
+        }
+    }
+
+    #[test]
+    fn measurement_config_rejects_unknown_image_sources_mode() {
+        let response = br#"{"settings":{"measurement":{"image-sources":"digest-only"}}}"#;
+        assert!(parse_measurement_config(response).is_err());
     }
 
     #[test]

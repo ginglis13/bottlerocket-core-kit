@@ -52,6 +52,7 @@ mod fscrypt;
 mod key;
 mod measure;
 mod mount_point;
+mod settings_measure;
 mod system;
 
 type Result<T> = std::result::Result<T, Whatever>;

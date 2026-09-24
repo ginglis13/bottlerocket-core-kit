@@ -3,7 +3,8 @@ use snafu::prelude::*;
 use std::fs;
 use zeroize::Zeroizing;
 
-use crate::system;
+use crate::system::ImageSourceMeasurement;
+use crate::{settings_measure, system};
 
 type Result<T> = std::result::Result<T, snafu::Whatever>;
 
@@ -37,9 +38,19 @@ const USER_DATA_ABSENT_MARKER: &[u8] = b"ec2-imds-user-data:v1:absent";
 /// The measured bytes are the OLPC canonical JSON of `settings`, minus the built-in exclusions
 /// and any the customer configured in `settings.measurement.excluded-settings`, followed by a
 /// newline (apiclient's output framing).
+///
+/// Unless `settings.measurement.image-sources` is `full` (the default), container image sources
+/// hosted in Amazon ECR are rewritten before canonicalization (see [`settings_measure`]).
+/// Otherwise the bytes come straight from `apiclient get --canonicalize`.
 pub fn os_settings() -> Result<()> {
     let config = system::apiclient_get_measurement_config()?;
-    let data = system::apiclient_get_settings(&config, true)?;
+    let data = match config.image_sources {
+        ImageSourceMeasurement::Full => system::apiclient_get_settings(&config, true)?,
+        mode => {
+            let raw = system::apiclient_get_settings(&config, false)?;
+            settings_measure::transformed_measurement(&raw, mode)?
+        }
+    };
     extend_pcr(PCR_SETTINGS, &data)
 }
 

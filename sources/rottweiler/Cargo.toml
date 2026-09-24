@@ -14,6 +14,8 @@ hkdf = { workspace = true, features = ["std"] }
 imdsclient.workspace = true
 log.workspace = true
 nix = { workspace = true, features = ["fs", "ioctl", "mount"] }
+olpc-cjson.workspace = true
+regex.workspace = true
 serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
 sha2.workspace = true
