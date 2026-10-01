@@ -1,3 +1,18 @@
+# v17.2.0 (2026-10-01)
+
+## Third Party Package Updates
+* Update `ethtool`, `findutils`, `glibc`, `procps`, `tpm2-tools`, `xfsprogs` to latest ([#1057])
+* Update `aws-iam-authenticator` to 0.7.20 ([#1058])
+* Patch `notation` to bump `oras-go` to v2.6.2 ([#1070])
+
+## Build Changes
+* Update to `twoliter` v0.25.1 ([#1069])
+
+[#1057]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/1057
+[#1058]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/1058
+[#1069]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/1069
+[#1070]: https://github.com/bottlerocket-os/bottlerocket-core-kit/pull/1070
+
 # v17.1.0 (2026-09-29)
 
 ## OS Changes
