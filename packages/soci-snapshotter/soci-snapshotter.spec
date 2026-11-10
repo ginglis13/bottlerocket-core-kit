@@ -72,6 +72,11 @@ Provides: %{name}(k8s)
 export LD_VERSION="-X github.com/awslabs/soci-snapshotter/version.Version=v%{gover}+bottlerocket"
 export LD_REVISION="-X github.com/awslabs/soci-snapshotter/version.Revision=%{gitrev}"
 
+# soci-snapshotter's ztoc/compression package links its vendored static zlib via
+# `#cgo LDFLAGS: -l:libz.a`. Go 1.26.11/1.27.4 hardened the cgo linker-flag
+# allowlist and now rejects the `-l:<file>` form, so re-permit this one flag.
+export CGO_LDFLAGS_ALLOW='-l:libz\.a'
+
 go build -C cmd -ldflags="${GOLDFLAGS} ${LD_VERSION} ${LD_REVISION}" -o "../out/soci-snapshotter-grpc" ./soci-snapshotter-grpc
 
 %install
